@@ -1,0 +1,50 @@
+Messages:
+  join: Collect all 8 pages
+  win: You won!
+  loss: You lost!
+Map:
+  world: world
+  fieldSizeZ: 250
+  fieldSpace: 22
+  fieldChunksX: 16
+  fieldChunksZ: 16
+  fieldCount: 50
+  pages:
+    1:
+      x: 0
+      y: 0
+      z: 0
+    2:
+      x: 0
+      y: 0
+      z: 0
+    3:
+      x: 0
+      y: 0
+      z: 0
+    4:
+      x: 0
+      y: 0
+      z: 0
+    5:
+      x: 0
+      y: 0
+      z: 0
+    6:
+      x: 0
+      y: 0
+      z: 0
+    7:
+      x: 0
+      y: 0
+      z: 0
+    8:
+      x: 0
+      y: 0
+      z: 0
+  spawn:
+      x: 0
+      y: 0
+      z: 0
+Misc:
+  disableChat: false
