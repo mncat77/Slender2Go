@@ -4,7 +4,7 @@ generator: http://dinnerbone.com/minecraft/tools/pluginator/
 main: me.mncat77.slender2go.Slender2Go
 name: Slender2Go
 startup: postworld
-version: '1.0'
+version: '1.4'
 commands:
    page:
       description: Allows you to set the location of a page

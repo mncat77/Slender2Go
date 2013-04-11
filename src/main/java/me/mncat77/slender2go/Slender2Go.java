@@ -1,7 +1,6 @@
 package me.mncat77.slender2go;
 
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
@@ -28,6 +27,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -107,10 +107,6 @@ public class Slender2Go extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(this, this);
         world = Bukkit.getWorld(worldName);
         NMSWorld = ((CraftWorld)world).getHandle();
-        List<Entity> entities = world.getEntities();
-        for(int e=0;e<entities.size();e++) {
-            entities.get(e).remove();
-        }
         Logger logger = Bukkit.getLogger();
         logger.log(Level.INFO, "[Slender2Go] Taken control over time");
         if(disableChat) {
@@ -126,7 +122,7 @@ public class Slender2Go extends JavaPlugin implements Listener {
             public void run() {
                 Player[] onlinePlayers = getServer().getOnlinePlayers();
                 for(Player player : onlinePlayers) {
-                    if(!player.isOp()) {
+                    if(!player.isOp() && (player.getWorld() == world)) {
                         player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS,9999,0));
                     }
                 }
@@ -143,6 +139,9 @@ public class Slender2Go extends JavaPlugin implements Listener {
         else {
             sender.sendMessage("Command must be used ingame!");
             return true;
+        }
+        if(player.getWorld() != world) {
+            player.sendMessage(ChatColor.RED + "Invalid location, change world in config.");
         }
         if(args.length == 1) {
             if(!player.hasPermission("slender2go.setpage")) {
@@ -176,24 +175,45 @@ public class Slender2Go extends JavaPlugin implements Listener {
     }
     
     @EventHandler
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+        Player player = event.getPlayer();
+        if(event.getFrom() == world) {
+            player.removePotionEffect(PotionEffectType.BLINDNESS);
+        }
+        else if(player.getWorld() == world) {
+            startGame(player);
+        }
+    }
+    
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        if(player.getWorld() == world) {
+            event.setJoinMessage(null);
+            startGame(player);
+        }
+    }
+    
+    @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
-        event.setDeathMessage(null);
-        event.getEntity().setHealth(20);
-        event.getEntity().kickPlayer(lossMessage);
+        Player player = event.getEntity();
+        if(player.getWorld() == world) {
+            event.setDeathMessage(null);
+            player.setHealth(20);
+            event.getEntity().kickPlayer(lossMessage);
+        }
     }
     
     
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event) {
-        if(!event.getPlayer().isOp() && disableChat)  {
+        if(!event.getPlayer().isOp() && disableChat && (event.getPlayer().getWorld() == world))  {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        event.setJoinMessage(null);
-        Player player = event.getPlayer();
+    public void startGame(Player player) {
         player.removePotionEffect(PotionEffectType.BLINDNESS);
         player.setHealth(20);
         player.setGameMode(GameMode.ADVENTURE);
@@ -234,18 +254,25 @@ public class Slender2Go extends JavaPlugin implements Listener {
     
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        event.setQuitMessage(null);
         Player player = event.getPlayer();
-        fields[player.getMetadata("field").get(0).asInt()] = true;
+        if(player.getWorld() == world) {
+            fields[player.getMetadata("field").get(0).asInt()] = true;
+            event.setQuitMessage(null);
+        }
     }
     
     public void onHangingBreakByEntity(HangingBreakByEntityEvent event) {
-        event.setCancelled(true);
+        if(event.getRemover().getWorld() == world) {
+            event.setCancelled(true);
+        }
     }
     
     @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         Entity entity = event.getRightClicked();
+        if(entity.getWorld() != world) {
+            return;
+        }
         if(entity instanceof ItemFrame) {
             entity.remove();
             Player player = event.getPlayer();
@@ -282,11 +309,15 @@ public class Slender2Go extends JavaPlugin implements Listener {
     
     @EventHandler
     public void onHangingBreak(HangingBreakEvent event) {
-        event.setCancelled(true);
+        if(event.getEntity().getWorld() == world) {
+            event.setCancelled(true);
+        }
     }
     
     @EventHandler
     public void onWeatherChange(WeatherChangeEvent event) {
-        event.setCancelled(true);
+        if(event.getWorld() == world) {
+            event.setCancelled(true);
+        }
     }
 }
