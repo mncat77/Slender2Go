@@ -14,8 +14,8 @@ import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.craftbukkit.v1_5_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_5_R2.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_6_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_6_R3.entity.CraftLivingEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
@@ -43,7 +43,7 @@ import org.bukkit.util.Vector;
 public class Slender2Go extends JavaPlugin implements Listener {
     
     private World world;
-    private net.minecraft.server.v1_5_R2.World NMSWorld;
+    private net.minecraft.server.v1_6_R3.World NMSWorld;
     
     private FileConfiguration config;
     
@@ -78,7 +78,7 @@ public class Slender2Go extends JavaPlugin implements Listener {
             args[0] = Class.class;
             args[1] = String.class;
             args[2] = int.class;
-            Method a = net.minecraft.server.v1_5_R2.EntityTypes.class.getDeclaredMethod("a", args);
+            Method a = net.minecraft.server.v1_6_R3.EntityTypes.class.getDeclaredMethod("a", args);
             a.setAccessible(true);
             a.invoke(a, Slender.class, "Enderman", 58);
         }
@@ -199,7 +199,7 @@ public class Slender2Go extends JavaPlugin implements Listener {
         Player player = event.getEntity();
         if(player.getWorld() == world) {
             event.setDeathMessage(null);
-            player.setHealth(20);
+            player.setHealth(20.0);
             event.getEntity().kickPlayer(lossMessage);
         }
     }
@@ -207,15 +207,14 @@ public class Slender2Go extends JavaPlugin implements Listener {
     
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event) {
-        if(!event.getPlayer().isOp() && disableChat && (event.getPlayer().getWorld() == world))  {
+        if(!event.getPlayer().isOp() && disableChat && (event.getPlayer().getWorld() == world)) {
             event.setCancelled(true);
         }
     }
 
-    @EventHandler
     public void startGame(Player player) {
         player.removePotionEffect(PotionEffectType.BLINDNESS);
-        player.setHealth(20);
+        player.setHealth(20.0);
         player.setGameMode(GameMode.ADVENTURE);
         player.sendMessage(startMessage);
         int f = -1;
@@ -274,11 +273,11 @@ public class Slender2Go extends JavaPlugin implements Listener {
             return;
         }
         if(entity instanceof ItemFrame) {
-            entity.remove();
             Player player = event.getPlayer();
             if(player.isOp()) {
                 return;
             }
+            entity.remove();
             int pages = player.getMetadata("pages").get(0).asInt();
             player.setMetadata("pages", new FixedMetadataValue(this, pages+1));
             player.sendMessage(ChatColor.GRAY + "Pages " + (pages+1)+"/8");
@@ -292,7 +291,7 @@ public class Slender2Go extends JavaPlugin implements Listener {
                 NMSWorld.addEntity(slender, CreatureSpawnEvent.SpawnReason.CUSTOM);
                 slender.getBukkitEntity().setMetadata("stalking", new FixedMetadataValue(this, player));
                 ((CraftLivingEntity)slender.getBukkitEntity()).addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE,9999,5));
-                player.damage(0);
+                player.damage(0.0);
                 player.playSound(loc, Sound.DIG_WOOL, 1, 1);
                 player.playSound(loc, Sound.ENDERMAN_STARE, 20, 1);
                 return;
